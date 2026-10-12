@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Category {
+  BABY
+  KITCHEN
+  EVENTS
+  BOOKS
+  HOLIDAY
+  TOOLS
+  OTHER
+}
+
+enum Condition {
+  NEW
+  GOOD
+  FAIR
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  BORROWED
+  RETURNED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  phone        String
+  neighborhood String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  items        Item[]
+  loanRequests LoanRequest[] @relation("BorrowerRequests")
+
+  @@map("users")
+}
+
+model Item {
+  id           String   @id @default(uuid())
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  category     Category
+  condition    Condition
+  neighborhood String
+  isPublic     Boolean  @default(true)
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  loanRequests LoanRequest[]
+
+  @@index([ownerId])
+  @@index([category])
+  @@index([neighborhood])
+  @@map("items")
+}
+
+model LoanRequest {
+  id         String        @id @default(uuid())
+  itemId     String
+  item       Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  borrowerId String
+  borrower   User          @relation("BorrowerRequests", fields: [borrowerId], references: [id], onDelete: Cascade)
+  startDate  DateTime
+  endDate    DateTime
+  message    String?
+  status     RequestStatus @default(PENDING)
+  borrowedAt DateTime?
+  returnedAt DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([itemId])
+  @@index([borrowerId])
+  @@index([status])
+  @@map("loan_requests")
+}
