@@ -54,7 +54,7 @@ Render מריץ את השרת (הקוד שלך). אבל מסד הנתונים ה
    |---|---|
    | Runtime | Node |
    | Build Command | `npm ci --include=dev && npm run prisma:generate && npm run build` |
-   | Start Command | `npx prisma migrate deploy && npm run ensure-admin && npm start` |
+   | Start Command | `npx prisma migrate deploy && npm run ensure-admin && (npm run seed:demo \|\| true) && npm start` |
    | Health Check Path | `/api/health` |
    | Plan | Free |
 
@@ -72,6 +72,10 @@ Render מריץ את השרת (הקוד שלך). אבל מסד הנתונים ה
    | `ADMIN_FULL_NAME` | השם שיוצג למנהלת, לדוגמה "מנהלת המערכת" |
    | `ADMIN_PHONE` | מספר טלפון כלשהו (חוקי, ולו למראית עין) |
    | `ADMIN_NEIGHBORHOOD` | אחת מהשכונות המדויקות מהרשימה (ראי `src/config/neighborhoods.ts`) |
+   | `SEED_DEMO` | `true` אם רוצים להוסיף נתוני דמו (משתמשות/פריטים/בקשות) בעלייה הראשונה, כדי שהאפליקציה תיראה חיה להדגמה. `false` (או להשאיר לא מוגדר) כדי לא להוסיף שום דבר. ראי הסבר מורחב מתחת לטבלה |
+   | `DEMO_USERS_PASSWORD` | סיסמה למשתמשות הדמו (רלוונטי רק אם `SEED_DEMO=true`). אם משאירים ריק/לא מוגדר - לא ייווצרו משתמשות דמו בכלל, גם אם `SEED_DEMO=true` |
+
+   **על נתוני הדמו (`SEED_DEMO`):** בניגוד ל-`ensure-admin`, שרץ בכל עלייה ולא נוגע בנתונים קיימים, ה-seed הזה הוא **חד-פעמי מטבעו**: הוא בודק בעצמו אם יש כבר פריטים/משתמשות במסד, ואם כן - לא עושה כלום (אין סיכון להכפלה אם תעלי מחדש את השירות כמה פעמים, גם אם תשכחי לכבות את `SEED_DEMO`). כדי לכבות את זה **לצמיתות** ולא להשאיר את זה תלוי רק בבדיקה הזו - שני את `SEED_DEMO` ל-`false` ב-Render ותני לשירות להתפרס מחדש. אם ה-seed נכשל מכל סיבה, השרת עדיין עולה כרגיל (לא חוסם את ה-Start Command).
 
 7. לחצי על "Create Web Service" / "Apply" ותני ל-Render לבנות ולהריץ. זה יכול לקחת כמה דקות. את יכולה לראות את ההתקדמות ב-"Logs".
 

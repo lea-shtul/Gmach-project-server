@@ -5,7 +5,7 @@ services:
     plan: free
     region: frankfurt
     buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
-    startCommand: npx prisma migrate deploy && npm run ensure-admin && npm start
+    startCommand: npx prisma migrate deploy && npm run ensure-admin && (npm run seed:demo || true) && npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -27,4 +27,8 @@ services:
       - key: ADMIN_PHONE
         sync: false
       - key: ADMIN_NEIGHBORHOOD
+        sync: false
+      - key: SEED_DEMO
+        sync: false
+      - key: DEMO_USERS_PASSWORD
         sync: false
