@@ -30,6 +30,12 @@ export const env = {
     phone: optional("ADMIN_PHONE", "050-0000000"),
     neighborhood: optional("ADMIN_NEIGHBORHOOD", "מרכז העיר"),
   },
+  email: {
+    resendApiKey: optional("RESEND_API_KEY", ""),
+    from: optional("EMAIL_FROM", ""),
+    fromName: optional("EMAIL_FROM_NAME", ""),
+  },
+  frontendUrl: optional("FRONTEND_URL", ""),
 };
 
 export const isProduction = env.nodeEnv === "production";
