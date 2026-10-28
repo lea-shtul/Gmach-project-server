@@ -1,6 +1,7 @@
 import { prisma } from "../prisma";
 import { AppError } from "../utils/AppError";
 import { toRequestDto } from "../utils/serializers";
+import * as emailService from "./email.service";
 import type { AuthUser } from "../middleware/auth";
 import type { CreateRequestInput } from "../validation/request.schema";
 import type { RequestStatusValue } from "../config/enums";
@@ -63,6 +64,10 @@ export async function createRequest(input: CreateRequestInput, borrower: AuthUse
       message: input.message,
     },
     include: REQUEST_INCLUDE,
+  });
+
+  void emailService.notifyNewLoanRequest(created).catch((error) => {
+    console.error("שליחת מייל על בקשה חדשה נכשלה:", error);
   });
 
   return toRequestDto(created, borrower);
@@ -167,6 +172,12 @@ export async function updateStatus(id: string, target: RequestStatusValue, viewe
 
     return updatedRequest;
   });
+
+  if (target === "APPROVED") {
+    void emailService.notifyRequestApproved(updated).catch((error) => {
+      console.error("שליחת מייל על אישור בקשה נכשלה:", error);
+    });
+  }
 
   return toRequestDto(updated, viewer);
 }
