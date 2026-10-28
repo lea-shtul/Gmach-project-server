@@ -1,6 +1,10 @@
 import type { Item, LoanRequest, User } from "@prisma/client";
 import { env } from "../config/env";
-import { buildNewRequestEmailHtml, buildRequestApprovedEmailHtml } from "../utils/emailTemplates";
+import {
+  buildNewRequestEmailHtml,
+  buildRequestApprovedEmailHtml,
+  buildWelcomeEmailHtml,
+} from "../utils/emailTemplates";
 
 const DEMO_EMAIL_DOMAIN = "@gemach-demo.local";
 
@@ -74,4 +78,13 @@ export async function notifyRequestApproved(request: RequestWithRelations): Prom
   });
 
   await sendEmail(request.borrower.email, 'הבקשה שלך אושרה - גמ"ח שכונתי', html);
+}
+
+export async function notifyUserRegistered(user: Pick<User, "fullName" | "email">): Promise<void> {
+  const html = buildWelcomeEmailHtml({
+    fullName: user.fullName,
+    frontendUrl: env.frontendUrl,
+  });
+
+  await sendEmail(user.email, 'ברוכה הבאה לגמ"ח שכונתי 💜', html);
 }

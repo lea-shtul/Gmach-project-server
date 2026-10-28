@@ -3,6 +3,7 @@ import { join } from "node:path";
 import {
   buildNewRequestEmailHtml,
   buildRequestApprovedEmailHtml,
+  buildWelcomeEmailHtml,
 } from "../src/utils/emailTemplates";
 
 const outDir = join(__dirname, "..", "email-previews");
@@ -28,9 +29,16 @@ const approvedHtml = buildRequestApprovedEmailHtml({
   frontendUrl: "http://localhost:5175",
 });
 
+const welcomeHtml = buildWelcomeEmailHtml({
+  fullName: "שרה אברהם",
+  frontendUrl: "http://localhost:5175",
+});
+
 writeFileSync(join(outDir, "new-request.html"), newRequestHtml, "utf-8");
 writeFileSync(join(outDir, "request-approved.html"), approvedHtml, "utf-8");
+writeFileSync(join(outDir, "welcome.html"), welcomeHtml, "utf-8");
 
 console.log(`נוצרו קבצי תצוגה מקדימה בתיקייה: ${outDir}`);
 console.log("- new-request.html");
 console.log("- request-approved.html");
+console.log("- welcome.html");

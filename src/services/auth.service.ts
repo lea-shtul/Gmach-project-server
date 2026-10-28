@@ -3,6 +3,7 @@ import { prisma } from "../prisma";
 import { AppError } from "../utils/AppError";
 import { signToken } from "../utils/jwt";
 import { toPublicUser } from "../utils/serializers";
+import * as emailService from "./email.service";
 import type { RegisterInput, LoginInput } from "../validation/auth.schema";
 
 const BCRYPT_ROUNDS = 10;
@@ -23,6 +24,10 @@ export async function register(input: RegisterInput) {
       phone: input.phone,
       neighborhood: input.neighborhood,
     },
+  });
+
+  void emailService.notifyUserRegistered(user).catch((error) => {
+    console.error("שליחת מייל ברוכה הבאה נכשלה:", error);
   });
 
   const token = signToken(user.id, user.role);

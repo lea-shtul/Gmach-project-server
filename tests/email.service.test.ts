@@ -3,6 +3,7 @@ import { env } from "../src/config/env";
 import { prisma } from "../src/prisma";
 import { isDemoEmail, sendEmail } from "../src/services/email.service";
 import { createRequest } from "../src/services/requests.service";
+import { register } from "../src/services/auth.service";
 import { createTestUser } from "./helpers";
 
 const originalResendApiKey = env.email.resendApiKey;
@@ -130,5 +131,56 @@ describe("יצירת בקשה ושליחת מייל", () => {
     );
 
     expect(dto.status).toBe("PENDING");
+  });
+});
+
+describe("הרשמה ושליחת מייל ברוכה הבאה", () => {
+  it("ההרשמה מצליחה ומחזירה token גם כששליחת מייל הברוכה הבאה נכשלת", async () => {
+    env.email.resendApiKey = "test-key";
+    env.email.from = "noreply@example.com";
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("resend is down"));
+
+    const result = await register({
+      fullName: "משתמשת חדשה",
+      email: "new-user-email-fail@test.local",
+      password: "password123",
+      phone: "050-2222222",
+      neighborhood: "פרדס כץ",
+    });
+
+    expect(result.token).toBeTypeOf("string");
+    expect(result.user.email).toBe("new-user-email-fail@test.local");
+  });
+
+  it("לא שולחת מייל ברוכה הבאה למשתמשת שנרשמת עם כתובת דמו", async () => {
+    env.email.resendApiKey = "test-key";
+    env.email.from = "noreply@example.com";
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+    await register({
+      fullName: "משתמשת דמו",
+      email: "demo-welcome@gemach-demo.local",
+      password: "password123",
+      phone: "050-3333333",
+      neighborhood: "פרדס כץ",
+    });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("לא שולחת מייל ברוכה הבאה כש-RESEND_API_KEY חסר", async () => {
+    env.email.resendApiKey = "";
+    env.email.from = "noreply@example.com";
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+    await register({
+      fullName: "משתמשת בלי שליחה",
+      email: "no-resend-key@test.local",
+      password: "password123",
+      phone: "050-4444444",
+      neighborhood: "פרדס כץ",
+    });
+
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
