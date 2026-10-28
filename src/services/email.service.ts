@@ -70,6 +70,7 @@ export async function notifyRequestApproved(request: RequestWithRelations): Prom
     endDate: request.endDate,
     ownerName: request.item.owner.fullName,
     ownerPhone: request.item.owner.phone,
+    frontendUrl: env.frontendUrl,
   });
 
   await sendEmail(request.borrower.email, 'הבקשה שלך אושרה - גמ"ח שכונתי', html);
