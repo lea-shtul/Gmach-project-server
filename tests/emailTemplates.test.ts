@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildNewRequestEmailHtml,
   buildRequestApprovedEmailHtml,
+  buildWelcomeEmailHtml,
   escapeHtml,
 } from "../src/utils/emailTemplates";
 
@@ -73,5 +74,57 @@ describe("emailTemplates - escapeHtml", () => {
 
     expect(html).toContain('href="tel:0501234567"');
     expect(html).toContain("050-123-4567");
+  });
+
+  it("התאריכים מוצגים בעברית מלאה עם יום בשבוע וטווח מ-...עד...", () => {
+    const html = buildNewRequestEmailHtml({
+      ownerName: "בעלת הפריט",
+      borrowerName: "מבקשת",
+      itemTitle: "פריט",
+      startDate: new Date("2026-11-02T00:00:00.000Z"),
+      endDate: new Date("2026-11-05T00:00:00.000Z"),
+      message: null,
+      receivedRequestsUrl: "https://example.com/received",
+    });
+
+    expect(html).toContain("מ-יום שני, 2 בנובמבר 2026 עד יום חמישי, 5 בנובמבר 2026");
+  });
+
+  it("הפונט הראשי הוא Rubik עם נפילה חזרה ל-Segoe UI/Tahoma, וקישור Google Fonts נמצא ב-head", () => {
+    const html = buildNewRequestEmailHtml({
+      ownerName: "בעלת הפריט",
+      borrowerName: "מבקשת",
+      itemTitle: "פריט",
+      startDate: new Date("2026-01-01"),
+      endDate: new Date("2026-01-05"),
+      message: null,
+      receivedRequestsUrl: "https://example.com/received",
+    });
+
+    expect(html).toContain("'Rubik','Segoe UI',Tahoma,Arial,sans-serif");
+    expect(html).toContain("fonts.googleapis.com/css2?family=Rubik");
+  });
+});
+
+describe("emailTemplates - buildWelcomeEmailHtml", () => {
+  it("כוללת את שם המשתמשת בכותרת ובכפתור לאתר", () => {
+    const html = buildWelcomeEmailHtml({
+      fullName: "שרה אברהם",
+      frontendUrl: "https://example.com",
+    });
+
+    expect(html).toContain('ברוכה הבאה לגמ"ח שכונתי, שרה אברהם!');
+    expect(html).toContain('href="https://example.com"');
+    expect(html).toContain("להיכנס לאתר");
+  });
+
+  it("שם עם תווים מסוכנים נשאר טקסט, לא תג HTML", () => {
+    const html = buildWelcomeEmailHtml({
+      fullName: '<img src=x onerror=alert(1)>',
+      frontendUrl: "https://example.com",
+    });
+
+    expect(html).not.toContain("<img src=x onerror=alert(1)>");
+    expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
   });
 });
